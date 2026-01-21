@@ -50,15 +50,6 @@
         .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
         .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
         .stat-value { font-size: 36px; font-weight: 700; color: var(--primary); }
-        .agences-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 32px; }
-        .agence-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 20px; transition: all 0.2s; cursor: pointer; }
-        .agence-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); border-color: var(--primary); }
-        .agence-name { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
-        .agence-site { display: inline-block; background: var(--primary); color: white; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-bottom: 12px; }
-        .agence-stats { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-        .agence-stat { text-align: center; }
-        .agence-stat-label { font-size: 11px; color: var(--text-light); margin-bottom: 4px; }
-        .agence-stat-value { font-size: 24px; font-weight: 700; color: var(--primary); }
         .card { background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; overflow: hidden; }
         .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); }
         .card-title { font-size: 18px; font-weight: 700; }
@@ -70,8 +61,6 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #1a1a1a; }
         .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
-        .btn-success { background: #10B981; color: white; }
-        .btn-danger { background: #EF4444; color: white; }
         .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; background: white; }
         thead { background: #FAFAFA; border-bottom: 2px solid var(--border); }
@@ -94,8 +83,6 @@
         .loading { text-align: center; padding: 40px; color: var(--text-light); }
         .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .quick-stock { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; }
-        .quick-stock input { max-width: 100px; }
     </style>
 </head>
 <body>
@@ -126,9 +113,8 @@
             </div>
             <nav class="nav-menu">
                 <div class="nav-item active" onclick="showTab('dashboard')"><span>📊</span><span>Dashboard</span></div>
-                <div class="nav-item" onclick="showTab('agences')"><span>🏢</span><span>Par Agence</span></div>
                 <div class="nav-item" onclick="showTab('demandes')"><span>🎫</span><span>Demandes</span></div>
-                <div class="nav-item" onclick="showTab('stock')"><span>📦</span><span>Stock Détaillé</span></div>
+                <div class="nav-item" onclick="showTab('stock')"><span>📦</span><span>Stock</span></div>
                 <div class="nav-item" onclick="showTab('historique')"><span>📜</span><span>Historique</span></div>
             </nav>
             <div class="sidebar-footer">
@@ -150,12 +136,24 @@
                     <div class="stats-grid" id="statsGrid">
                         <div class="loading"><div class="spinner"></div>Chargement...</div>
                     </div>
-                </div>
-
-                <div id="tab-agences" class="tab-content">
-                    <h2 style="margin-bottom: 20px; font-size: 20px;">Stock par agence</h2>
-                    <div class="agences-grid" id="agencesGrid">
-                        <div class="loading"><div class="spinner"></div>Chargement...</div>
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Stock par agence</h2></div>
+                        <div class="card-body">
+                            <div class="filters">
+                                <div class="filters-title">Filtres</div>
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Agence</label><select id="filterAgence"><option value="">Toutes</option></select></div>
+                                    <div class="form-group"><label class="form-label">Catégorie</label><select id="filterCategorie"><option value="">Toutes</option></select></div>
+                                    <div class="form-group"><label class="form-label"><input type="checkbox" id="filterAlertes" style="width:auto;margin-right:8px;">Alertes uniquement</label></div>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead><tr><th>Agence</th><th>Site</th><th>Article</th><th>Catégorie</th><th>Quantité</th><th>Min</th><th>Statut</th></tr></thead>
+                                    <tbody id="stockTableBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -197,22 +195,21 @@
 
                 <div id="tab-stock" class="tab-content">
                     <div class="card">
-                        <div class="card-header"><h2 class="card-title">Stock Détaillé</h2></div>
+                        <div class="card-header"><h2 class="card-title">Mise à jour du stock</h2></div>
                         <div class="card-body">
-                            <div class="filters">
-                                <div class="filters-title">Filtres</div>
+                            <div id="stockAlert"></div>
+                            <form id="stockForm">
                                 <div class="form-row">
-                                    <div class="form-group"><label class="form-label">Agence</label><select id="filterAgence"><option value="">Toutes</option></select></div>
-                                    <div class="form-group"><label class="form-label">Catégorie</label><select id="filterCategorie"><option value="">Toutes</option></select></div>
-                                    <div class="form-group"><label class="form-label"><input type="checkbox" id="filterAlertes" style="width:auto;margin-right:8px;">Alertes uniquement</label></div>
+                                    <div class="form-group"><label class="form-label">Agence *</label><select id="stockAgence" required><option value="">Sélectionner</option></select></div>
+                                    <div class="form-group"><label class="form-label">Article *</label><select id="stockArticle" required><option value="">Sélectionner</option></select></div>
                                 </div>
-                            </div>
-                            <div class="table-container">
-                                <table>
-                                    <thead><tr><th>Agence</th><th>Site</th><th>Article</th><th>Catégorie</th><th>Quantité</th><th>Min</th><th>Actions</th></tr></thead>
-                                    <tbody id="stockTableBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
-                                </table>
-                            </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Opération *</label><select id="stockOperation" required><option value="add">Ajouter (+)</option><option value="remove">Retirer (-)</option></select></div>
+                                    <div class="form-group"><label class="form-label">Quantité *</label><input type="number" id="stockQuantite" min="1" value="1" required></div>
+                                </div>
+                                <div class="form-group"><label class="form-label">Commentaire</label><textarea id="stockCommentaire" rows="3"></textarea></div>
+                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -223,8 +220,8 @@
                         <div class="card-body">
                             <div class="table-container">
                                 <table>
-                                    <thead><tr><th>Date</th><th>Agence</th><th>Article</th><th>Type</th><th>Qté</th><th>Avant</th><th>Après</th><th>User</th></tr></thead>
-                                    <tbody id="historiqueTableBody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
+                                    <thead><tr><th>Date</th><th>Agence</th><th>Article</th><th>Type</th><th>Qté</th><th>Avant</th><th>Après</th><th>User</th><th>Commentaire</th></tr></thead>
+                                    <tbody id="historiqueTableBody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
                                 </table>
                             </div>
                         </div>
@@ -238,7 +235,6 @@
         const API_URL = 'http://localhost:8000';
         let currentUser = null;
         let allStock = [];
-        let allAgences = [];
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -262,27 +258,24 @@
         function logout() { location.reload(); }
 
         function showTab(name) {
-            const titles = {dashboard:'Dashboard', agences:'Par Agence', demandes:'Demandes', stock:'Stock Détaillé', historique:'Historique'};
+            const titles = {dashboard:'Dashboard', demandes:'Demandes', stock:'Stock', historique:'Historique'};
             document.getElementById('pageTitle').textContent = titles[name];
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             event.target.closest('.nav-item').classList.add('active');
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
-            if(name==='agences') loadAgencesView();
             if(name==='demandes') loadDemandes();
-            if(name==='stock') loadStock();
             if(name==='historique') loadHistorique();
         }
 
         async function loadAll() {
-            await Promise.all([loadAgences(), loadArticles(), loadStats(), loadAgencesView()]);
+            await Promise.all([loadAgences(), loadArticles(), loadStock(), loadStats(), loadDemandes()]);
         }
 
         async function loadAgences() {
             const res = await fetch(API_URL + '/api/agences');
             const data = await res.json();
-            allAgences = data.agences;
-            ['filterAgence','demandeAgence'].forEach(id => {
+            ['filterAgence','demandeAgence','stockAgence'].forEach(id => {
                 const s = document.getElementById(id);
                 s.innerHTML = id==='filterAgence' ? '<option value="">Toutes</option>' : '<option value="">Sélectionner</option>';
                 data.agences.forEach(a => s.innerHTML += '<option value="'+a.id+'">'+a.nom+'</option>');
@@ -292,53 +285,19 @@
         async function loadArticles() {
             const res = await fetch(API_URL + '/api/articles');
             const data = await res.json();
-            const s = document.getElementById('demandeArticle');
-            s.innerHTML = '<option value="">Sélectionner</option>';
-            let cat = '';
-            data.articles.forEach(a => {
-                if(a.categorie !== cat) { s.innerHTML += '<optgroup label="'+a.categorie+'">'; cat = a.categorie; }
-                s.lastElementChild.innerHTML += '<option value="'+a.id+'">'+a.nom+'</option>';
+            ['demandeArticle','stockArticle'].forEach(id => {
+                const s = document.getElementById(id);
+                s.innerHTML = '<option value="">Sélectionner</option>';
+                let cat = '';
+                data.articles.forEach(a => {
+                    if(a.categorie !== cat) { s.innerHTML += '<optgroup label="'+a.categorie+'">'; cat = a.categorie; }
+                    s.lastElementChild.innerHTML += '<option value="'+a.id+'">'+a.nom+'</option>';
+                });
             });
             const cats = [...new Set(data.articles.map(a=>a.categorie))];
             const fc = document.getElementById('filterCategorie');
             fc.innerHTML = '<option value="">Toutes</option>';
             cats.forEach(c => fc.innerHTML += '<option value="'+c+'">'+c+'</option>');
-        }
-
-        async function loadAgencesView() {
-            const res = await fetch(API_URL + '/api/stock');
-            const data = await res.json();
-            const agenceStats = {};
-            data.stock.forEach(s => {
-                if(!agenceStats[s.agence_id]) {
-                    agenceStats[s.agence_id] = {
-                        nom: s.agence_nom,
-                        site: s.agence_site,
-                        total: 0,
-                        alertes: 0
-                    };
-                }
-                agenceStats[s.agence_id].total += s.quantite;
-                if(s.alerte) agenceStats[s.agence_id].alertes++;
-            });
-            
-            const grid = document.getElementById('agencesGrid');
-            grid.innerHTML = Object.values(agenceStats).map(ag => `
-                <div class="agence-card">
-                    <div class="agence-name">${ag.nom}</div>
-                    <span class="agence-site">${ag.site}</span>
-                    <div class="agence-stats">
-                        <div class="agence-stat">
-                            <div class="agence-stat-label">Total Items</div>
-                            <div class="agence-stat-value">${ag.total}</div>
-                        </div>
-                        <div class="agence-stat">
-                            <div class="agence-stat-label">Alertes</div>
-                            <div class="agence-stat-value" style="color: ${ag.alertes > 0 ? '#EF4444' : '#10B981'};">${ag.alertes}</div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
         }
 
         async function loadStock() {
@@ -351,64 +310,13 @@
         function displayStock(stock) {
             const tb = document.getElementById('stockTableBody');
             if(!stock.length) { tb.innerHTML = '<tr><td colspan="7">Aucun stock</td></tr>'; return; }
-            tb.innerHTML = stock.map(s => `
-                <tr>
-                    <td style="font-weight:600;">${s.agence_nom}</td>
-                    <td><span class="badge badge-dark">${s.agence_site}</span></td>
-                    <td>${s.article_nom}</td>
-                    <td><span class="badge badge-info">${s.categorie}</span></td>
-                    <td style="font-weight:700;font-size:16px;">${s.quantite}</td>
-                    <td>${s.stock_min}</td>
-                    <td>
-                        <div class="quick-stock">
-                            <input type="number" id="qty_${s.id}" min="1" value="1" style="padding:6px 8px;font-size:13px;">
-                            <button class="btn btn-success" style="padding:6px 12px;font-size:12px;" onclick="quickUpdate(${s.article_id}, ${s.agence_id}, 'add')">+</button>
-                            <button class="btn btn-danger" style="padding:6px 12px;font-size:12px;" onclick="quickUpdate(${s.article_id}, ${s.agence_id}, 'remove')">-</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        async function quickUpdate(articleId, agenceId, op) {
-            const row = event.target.closest('tr');
-            const input = row.querySelector('input[type="number"]');
-            const q = +input.value;
-            if(!q || q < 1) return alert('Quantité invalide');
-            
-            try {
-                const res = await fetch(API_URL + '/api/stock/update', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        article_id: articleId,
-                        agence_id: agenceId,
-                        quantite: op==='add' ? q : -q,
-                        commentaire: null
-                    })
-                });
-                if(res.ok) {
-                    loadStock();
-                    loadStats();
-                    loadAgencesView();
-                } else {
-                    const err = await res.json();
-                    alert(err.detail || 'Erreur');
-                }
-            } catch(e) { alert('Erreur'); }
+            tb.innerHTML = stock.map(s => '<tr><td style="font-weight:600;">'+s.agence_nom+'</td><td><span class="badge badge-dark">'+s.agence_site+'</span></td><td>'+s.article_nom+'</td><td><span class="badge badge-info">'+s.categorie+'</span></td><td style="font-weight:700;font-size:16px;">'+s.quantite+'</td><td>'+s.stock_min+'</td><td>'+(s.alerte ? '<span class="badge badge-danger">⚠️ Alerte</span>' : '<span class="badge badge-success">✓ OK</span>')+'</td></tr>').join('');
         }
 
         async function loadStats() {
             const res = await fetch(API_URL + '/api/stats');
             const d = await res.json();
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card"><div class="stat-label">Agences</div><div class="stat-value">${d.total_agences}</div></div>
-                <div class="stat-card"><div class="stat-label">Articles</div><div class="stat-value">${d.total_articles}</div></div>
-                <div class="stat-card"><div class="stat-label">Demandes</div><div class="stat-value">${d.total_demandes}</div></div>
-                <div class="stat-card"><div class="stat-label">En attente</div><div class="stat-value">${d.demandes_attente}</div></div>
-                <div class="stat-card"><div class="stat-label">Alertes</div><div class="stat-value">${d.alertes_stock}</div></div>
-                <div class="stat-card"><div class="stat-label">Total items</div><div class="stat-value">${d.total_items}</div></div>
-            `;
+            document.getElementById('statsGrid').innerHTML = '<div class="stat-card"><div class="stat-label">Agences</div><div class="stat-value">'+d.total_agences+'</div></div><div class="stat-card"><div class="stat-label">Articles</div><div class="stat-value">'+d.total_articles+'</div></div><div class="stat-card"><div class="stat-label">Demandes</div><div class="stat-value">'+d.total_demandes+'</div></div><div class="stat-card"><div class="stat-label">En attente</div><div class="stat-value">'+d.demandes_attente+'</div></div><div class="stat-card"><div class="stat-label">Alertes</div><div class="stat-value">'+d.alertes_stock+'</div></div><div class="stat-card"><div class="stat-label">Total items</div><div class="stat-value">'+d.total_items+'</div></div>';
         }
 
         async function loadDemandes() {
@@ -423,8 +331,8 @@
             const res = await fetch(API_URL + '/api/historique');
             const data = await res.json();
             const tb = document.getElementById('historiqueTableBody');
-            if(!data.historique.length) { tb.innerHTML = '<tr><td colspan="8">Aucun historique</td></tr>'; return; }
-            tb.innerHTML = data.historique.map(h => '<tr><td>'+new Date(h.date_mouvement).toLocaleString('fr-FR')+'</td><td>'+h.agence_nom+'</td><td>'+h.article_nom+'</td><td><span class="badge badge-info">'+h.type_mouvement+'</span></td><td style="font-weight:600;">'+h.quantite+'</td><td>'+h.stock_avant+'</td><td>'+h.stock_apres+'</td><td>'+(h.utilisateur||'-')+'</td></tr>').join('');
+            if(!data.historique.length) { tb.innerHTML = '<tr><td colspan="9">Aucun historique</td></tr>'; return; }
+            tb.innerHTML = data.historique.map(h => '<tr><td>'+new Date(h.date_mouvement).toLocaleString('fr-FR')+'</td><td>'+h.agence_nom+'</td><td>'+h.article_nom+'</td><td><span class="badge badge-info">'+h.type_mouvement+'</span></td><td style="font-weight:600;">'+h.quantite+'</td><td>'+h.stock_avant+'</td><td>'+h.stock_apres+'</td><td>'+(h.utilisateur||'-')+'</td><td>'+(h.commentaire||'-')+'</td></tr>').join('');
         }
 
         ['filterAgence','filterCategorie','filterAlertes'].forEach(id => {
@@ -476,10 +384,33 @@
                 });
                 if(res.ok) {
                     alert('Validée !');
-                    loadDemandes(); loadStats(); loadAgencesView();
+                    loadDemandes(); loadStock(); loadStats(); loadHistorique();
                 } else alert('Erreur');
             } catch(e) { alert('Erreur'); }
         }
+
+        document.getElementById('stockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const op = document.getElementById('stockOperation').value;
+            const q = +document.getElementById('stockQuantite').value;
+            try {
+                const res = await fetch(API_URL + '/api/stock/update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        article_id: +document.getElementById('stockArticle').value,
+                        agence_id: +document.getElementById('stockAgence').value,
+                        quantite: op==='add' ? q : -q,
+                        commentaire: document.getElementById('stockCommentaire').value||null
+                    })
+                });
+                if(res.ok) {
+                    alert('Stock mis à jour !');
+                    document.getElementById('stockForm').reset();
+                    loadStock(); loadStats(); loadHistorique();
+                } else alert('Erreur');
+            } catch(e) { alert('Erreur'); }
+        });
     </script>
 </body>
 </html>
