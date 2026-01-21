@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock IT - Publicis Groupe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #000000;
+            --accent: #E4002B;
+            --bg: #F5F5F5;
+            --text: #1a1a1a;
+            --text-light: #666666;
+            --border: #E0E0E0;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); }
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); padding: 20px; }
+        .login-card { background: white; padding: 48px; border-radius: 8px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .login-logo { text-align: center; font-size: 48px; margin-bottom: 24px; }
+        .login-title { text-align: center; font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .login-subtitle { text-align: center; color: var(--text-light); margin-bottom: 32px; font-size: 14px; }
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+        .form-input { width: 100%; padding: 14px 16px; border: 2px solid var(--border); border-radius: 6px; font-size: 15px; background: #FAFAFA; transition: all 0.2s; }
+        .form-input:focus { outline: none; border-color: var(--primary); background: white; }
+        .btn-login { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-login:hover { background: #1a1a1a; }
+        .dashboard { display: none; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 280px; height: 100vh; background: var(--primary); color: white; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 32px 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+        .sidebar-subtitle { font-size: 12px; opacity: 0.6; }
+        .nav-menu { flex: 1; padding: 24px 16px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; color: rgba(255,255,255,0.7); border-radius: 6px; margin-bottom: 4px; cursor: pointer; transition: all 0.2s; font-size: 14px; font-weight: 500; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--accent); color: white; }
+        .sidebar-footer { padding: 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+        .user-role { font-size: 12px; opacity: 0.6; margin-top: 4px; }
+        .btn-logout { width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-logout:hover { background: rgba(255,255,255,0.2); }
+        .main-content { margin-left: 280px; min-height: 100vh; }
+        .topbar { background: white; padding: 20px 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .topbar h1 { font-size: 24px; font-weight: 700; }
+        .site-badge { background: var(--primary); color: white; padding: 8px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
+        .content { padding: 32px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 32px; }
+        .stat-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 24px; transition: all 0.2s; }
+        .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .stat-label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .stat-value { font-size: 36px; font-weight: 700; color: var(--primary); }
+        .card { background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 24px; overflow: hidden; }
+        .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); }
+        .card-title { font-size: 18px; font-weight: 700; }
+        .card-body { padding: 24px; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        select, input[type="text"], input[type="email"], input[type="number"], textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--border); border-radius: 6px; font-size: 14px; background: white; transition: all 0.2s; }
+        select:focus, input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        .btn { padding: 12px 24px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1a1a1a; }
+        .btn-secondary { background: var(--bg); color: var(--text); border: 2px solid var(--border); }
+        .table-container { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        thead { background: #FAFAFA; border-bottom: 2px solid var(--border); }
+        th { padding: 16px 20px; text-align: left; font-size: 12px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        tbody tr:hover { background: #FAFAFA; }
+        .badge { display: inline-block; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+        .badge-success { background: #D1FAE5; color: #065F46; }
+        .badge-danger { background: #FEE2E2; color: #991B1B; }
+        .badge-warning { background: #FEF3C7; color: #92400E; }
+        .badge-info { background: #DBEAFE; color: #1E40AF; }
+        .badge-dark { background: var(--primary); color: white; }
+        .alert { padding: 16px 20px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; border-left: 4px solid; }
+        .alert-success { background: #D1FAE5; color: #065F46; border-color: #10B981; }
+        .alert-error { background: #FEE2E2; color: #991B1B; border-color: #EF4444; }
+        .filters { background: #FAFAFA; border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .filters-title { font-size: 13px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .loading { text-align: center; padding: 40px; color: var(--text-light); }
+        .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="loginPage" class="login-page">
+        <div class="login-card">
+            <div class="login-logo">📦</div>
+            <h1 class="login-title">Stock IT</h1>
+            <p class="login-subtitle">Publicis Groupe</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="loginEmail" value="abir@publicis.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" class="form-input" id="loginPassword" value="admin123" required>
+                </div>
+                <button type="submit" class="btn-login">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="dashboardPage" class="dashboard">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📦 Stock IT</div>
+                <div class="sidebar-subtitle">Publicis Groupe</div>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" onclick="showTab('dashboard')"><span>📊</span><span>Dashboard</span></div>
+                <div class="nav-item" onclick="showTab('demandes')"><span>🎫</span><span>Demandes</span></div>
+                <div class="nav-item" onclick="showTab('stock')"><span>📦</span><span>Stock</span></div>
+                <div class="nav-item" onclick="showTab('historique')"><span>📜</span><span>Historique</span></div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div id="userName">Chargement...</div>
+                    <div class="user-role">Administrateur</div>
+                </div>
+                <button class="btn-logout" onclick="logout()">Déconnexion</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="topbar">
+                <h1 id="pageTitle">Dashboard</h1>
+                <span class="site-badge">SITE 145 & 133</span>
+            </div>
+            <div class="content">
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="stats-grid" id="statsGrid">
+                        <div class="loading"><div class="spinner"></div>Chargement...</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Stock par agence</h2></div>
+                        <div class="card-body">
+                            <div class="filters">
+                                <div class="filters-title">Filtres</div>
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Agence</label><select id="filterAgence"><option value="">Toutes</option></select></div>
+                                    <div class="form-group"><label class="form-label">Catégorie</label><select id="filterCategorie"><option value="">Toutes</option></select></div>
+                                    <div class="form-group"><label class="form-label"><input type="checkbox" id="filterAlertes" style="width:auto;margin-right:8px;">Alertes uniquement</label></div>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead><tr><th>Agence</th><th>Site</th><th>Article</th><th>Catégorie</th><th>Quantité</th><th>Min</th><th>Statut</th></tr></thead>
+                                    <tbody id="stockTableBody"><tr><td colspan="7"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-demandes" class="tab-content">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Nouvelle demande</h2></div>
+                        <div class="card-body">
+                            <div id="demandeAlert"></div>
+                            <form id="demandeForm">
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Ticket ServiceNow *</label><input type="text" id="ticketServiceNow" required></div>
+                                    <div class="form-group"><label class="form-label">Agence *</label><select id="demandeAgence" required><option value="">Sélectionner</option></select></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Article *</label><select id="demandeArticle" required><option value="">Sélectionner</option></select></div>
+                                    <div class="form-group"><label class="form-label">Quantité *</label><input type="number" id="demandeQuantite" min="1" value="1" required></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Client *</label><input type="text" id="clientNom" required></div>
+                                    <div class="form-group"><label class="form-label">Email</label><input type="email" id="clientEmail"></div>
+                                </div>
+                                <div class="form-group"><label class="form-label">Commentaire</label><textarea id="demandeCommentaire" rows="3"></textarea></div>
+                                <button type="submit" class="btn btn-primary">Créer</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Liste des demandes</h2></div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table>
+                                    <thead><tr><th>Ticket</th><th>Date</th><th>Agence</th><th>Article</th><th>Client</th><th>Qté</th><th>Statut</th><th>Actions</th></tr></thead>
+                                    <tbody id="demandesTableBody"><tr><td colspan="8"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-stock" class="tab-content">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Mise à jour du stock</h2></div>
+                        <div class="card-body">
+                            <div id="stockAlert"></div>
+                            <form id="stockForm">
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Agence *</label><select id="stockAgence" required><option value="">Sélectionner</option></select></div>
+                                    <div class="form-group"><label class="form-label">Article *</label><select id="stockArticle" required><option value="">Sélectionner</option></select></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label class="form-label">Opération *</label><select id="stockOperation" required><option value="add">Ajouter (+)</option><option value="remove">Retirer (-)</option></select></div>
+                                    <div class="form-group"><label class="form-label">Quantité *</label><input type="number" id="stockQuantite" min="1" value="1" required></div>
+                                </div>
+                                <div class="form-group"><label class="form-label">Commentaire</label><textarea id="stockCommentaire" rows="3"></textarea></div>
+                                <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-historique" class="tab-content">
+                    <div class="card">
+                        <div class="card-header"><h2 class="card-title">Historique</h2></div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table>
+                                    <thead><tr><th>Date</th><th>Agence</th><th>Article</th><th>Type</th><th>Qté</th><th>Avant</th><th>Après</th><th>User</th><th>Commentaire</th></tr></thead>
+                                    <tbody id="historiqueTableBody"><tr><td colspan="9"><div class="loading"><div class="spinner"></div>Chargement...</div></td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let currentUser = null;
+        let allStock = [];
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch(API_URL + '/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    currentUser = data.user;
+                    document.getElementById('loginPage').style.display = 'none';
+                    document.getElementById('dashboardPage').style.display = 'block';
+                    document.getElementById('userName').textContent = data.user.prenom + ' ' + data.user.nom;
+                    loadAll();
+                } else alert(data.detail);
+            } catch(e) { alert('Erreur connexion'); }
+        });
+
+        function logout() { location.reload(); }
+
+        function showTab(name) {
+            const titles = {dashboard:'Dashboard', demandes:'Demandes', stock:'Stock', historique:'Historique'};
+            document.getElementById('pageTitle').textContent = titles[name];
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            if(name==='demandes') loadDemandes();
+            if(name==='historique') loadHistorique();
+        }
+
+        async function loadAll() {
+            await Promise.all([loadAgences(), loadArticles(), loadStock(), loadStats(), loadDemandes()]);
+        }
+
+        async function loadAgences() {
+            const res = await fetch(API_URL + '/api/agences');
+            const data = await res.json();
+            ['filterAgence','demandeAgence','stockAgence'].forEach(id => {
+                const s = document.getElementById(id);
+                s.innerHTML = id==='filterAgence' ? '<option value="">Toutes</option>' : '<option value="">Sélectionner</option>';
+                data.agences.forEach(a => s.innerHTML += '<option value="'+a.id+'">'+a.nom+'</option>');
+            });
+        }
+
+        async function loadArticles() {
+            const res = await fetch(API_URL + '/api/articles');
+            const data = await res.json();
+            ['demandeArticle','stockArticle'].forEach(id => {
+                const s = document.getElementById(id);
+                s.innerHTML = '<option value="">Sélectionner</option>';
+                let cat = '';
+                data.articles.forEach(a => {
+                    if(a.categorie !== cat) { s.innerHTML += '<optgroup label="'+a.categorie+'">'; cat = a.categorie; }
+                    s.lastElementChild.innerHTML += '<option value="'+a.id+'">'+a.nom+'</option>';
+                });
+            });
+            const cats = [...new Set(data.articles.map(a=>a.categorie))];
+            const fc = document.getElementById('filterCategorie');
+            fc.innerHTML = '<option value="">Toutes</option>';
+            cats.forEach(c => fc.innerHTML += '<option value="'+c+'">'+c+'</option>');
+        }
+
+        async function loadStock() {
+            const res = await fetch(API_URL + '/api/stock');
+            const data = await res.json();
+            allStock = data.stock;
+            displayStock(data.stock);
+        }
+
+        function displayStock(stock) {
+            const tb = document.getElementById('stockTableBody');
+            if(!stock.length) { tb.innerHTML = '<tr><td colspan="7">Aucun stock</td></tr>'; return; }
+            tb.innerHTML = stock.map(s => '<tr><td style="font-weight:600;">'+s.agence_nom+'</td><td><span class="badge badge-dark">'+s.agence_site+'</span></td><td>'+s.article_nom+'</td><td><span class="badge badge-info">'+s.categorie+'</span></td><td style="font-weight:700;font-size:16px;">'+s.quantite+'</td><td>'+s.stock_min+'</td><td>'+(s.alerte ? '<span class="badge badge-danger">⚠️ Alerte</span>' : '<span class="badge badge-success">✓ OK</span>')+'</td></tr>').join('');
+        }
+
+        async function loadStats() {
+            const res = await fetch(API_URL + '/api/stats');
+            const d = await res.json();
+            document.getElementById('statsGrid').innerHTML = '<div class="stat-card"><div class="stat-label">Agences</div><div class="stat-value">'+d.total_agences+'</div></div><div class="stat-card"><div class="stat-label">Articles</div><div class="stat-value">'+d.total_articles+'</div></div><div class="stat-card"><div class="stat-label">Demandes</div><div class="stat-value">'+d.total_demandes+'</div></div><div class="stat-card"><div class="stat-label">En attente</div><div class="stat-value">'+d.demandes_attente+'</div></div><div class="stat-card"><div class="stat-label">Alertes</div><div class="stat-value">'+d.alertes_stock+'</div></div><div class="stat-card"><div class="stat-label">Total items</div><div class="stat-value">'+d.total_items+'</div></div>';
+        }
+
+        async function loadDemandes() {
+            const res = await fetch(API_URL + '/api/demandes');
+            const data = await res.json();
+            const tb = document.getElementById('demandesTableBody');
+            if(!data.demandes.length) { tb.innerHTML = '<tr><td colspan="8">Aucune demande</td></tr>'; return; }
+            tb.innerHTML = data.demandes.map(d => '<tr><td style="font-weight:600;">'+d.ticket_servicenow+'</td><td>'+new Date(d.date_demande).toLocaleString('fr-FR')+'</td><td>'+d.agence_nom+'</td><td>'+d.article_nom+'</td><td>'+d.client_nom+'</td><td style="font-weight:600;">'+d.quantite+'</td><td>'+(d.statut==='en_attente' ? '<span class="badge badge-warning">En attente</span>' : '<span class="badge badge-success">Validée</span>')+'</td><td>'+(d.statut==='en_attente' ? '<button class="btn btn-primary" style="padding:8px 16px;" onclick="valider('+d.id+')">Valider</button>' : '-')+'</td></tr>').join('');
+        }
+
+        async function loadHistorique() {
+            const res = await fetch(API_URL + '/api/historique');
+            const data = await res.json();
+            const tb = document.getElementById('historiqueTableBody');
+            if(!data.historique.length) { tb.innerHTML = '<tr><td colspan="9">Aucun historique</td></tr>'; return; }
+            tb.innerHTML = data.historique.map(h => '<tr><td>'+new Date(h.date_mouvement).toLocaleString('fr-FR')+'</td><td>'+h.agence_nom+'</td><td>'+h.article_nom+'</td><td><span class="badge badge-info">'+h.type_mouvement+'</span></td><td style="font-weight:600;">'+h.quantite+'</td><td>'+h.stock_avant+'</td><td>'+h.stock_apres+'</td><td>'+(h.utilisateur||'-')+'</td><td>'+(h.commentaire||'-')+'</td></tr>').join('');
+        }
+
+        ['filterAgence','filterCategorie','filterAlertes'].forEach(id => {
+            document.getElementById(id).addEventListener('change', applyFilters);
+        });
+
+        function applyFilters() {
+            let f = allStock;
+            const ag = document.getElementById('filterAgence').value;
+            const cat = document.getElementById('filterCategorie').value;
+            const alt = document.getElementById('filterAlertes').checked;
+            if(ag) f = f.filter(s => s.agence_id == ag);
+            if(cat) f = f.filter(s => s.categorie === cat);
+            if(alt) f = f.filter(s => s.alerte);
+            displayStock(f);
+        }
+
+        document.getElementById('demandeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await fetch(API_URL + '/api/demandes/create', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        ticket_servicenow: document.getElementById('ticketServiceNow').value,
+                        agence_id: +document.getElementById('demandeAgence').value,
+                        article_id: +document.getElementById('demandeArticle').value,
+                        client_nom: document.getElementById('clientNom').value,
+                        client_email: document.getElementById('clientEmail').value||null,
+                        quantite: +document.getElementById('demandeQuantite').value,
+                        commentaire: document.getElementById('demandeCommentaire').value||null
+                    })
+                });
+                if(res.ok) {
+                    alert('Demande créée !');
+                    document.getElementById('demandeForm').reset();
+                    loadDemandes(); loadStats();
+                } else alert('Erreur');
+            } catch(e) { alert('Erreur'); }
+        });
+
+        async function valider(id) {
+            if(!confirm('Valider ?')) return;
+            try {
+                const res = await fetch(API_URL + '/api/demandes/' + id + '/valider', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({utilisateur: currentUser.email})
+                });
+                if(res.ok) {
+                    alert('Validée !');
+                    loadDemandes(); loadStock(); loadStats(); loadHistorique();
+                } else alert('Erreur');
+            } catch(e) { alert('Erreur'); }
+        }
+
+        document.getElementById('stockForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const op = document.getElementById('stockOperation').value;
+            const q = +document.getElementById('stockQuantite').value;
+            try {
+                const res = await fetch(API_URL + '/api/stock/update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        article_id: +document.getElementById('stockArticle').value,
+                        agence_id: +document.getElementById('stockAgence').value,
+                        quantite: op==='add' ? q : -q,
+                        commentaire: document.getElementById('stockCommentaire').value||null
+                    })
+                });
+                if(res.ok) {
+                    alert('Stock mis à jour !');
+                    document.getElementById('stockForm').reset();
+                    loadStock(); loadStats(); loadHistorique();
+                } else alert('Erreur');
+            } catch(e) { alert('Erreur'); }
+        });
+    </script>
+</body>
+</html>
